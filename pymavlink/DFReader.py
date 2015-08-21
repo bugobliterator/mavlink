@@ -345,6 +345,7 @@ class DFReader_binary(DFReader):
     def _parse_next(self):
         '''read one message, returning it as an object'''
         if self.data_len - self.offset < 3:
+            #out of data
             return None
             
         hdr = self.data[self.offset:self.offset+3]
@@ -356,13 +357,13 @@ class DFReader_binary(DFReader):
                 skip_type = (ord(hdr[0]), ord(hdr[1]), ord(hdr[2]))
             skip_bytes += 1
             self.offset += 1
+            self.remaining -= 1
             if self.data_len - self.offset < 3:
+                #out of data
                 return None
             hdr = self.data[self.offset:self.offset+3]
         msg_type = ord(hdr[2])
         if skip_bytes != 0:
-            if self.remaining < 528:
-                return None
             print("Skipped %u bad bytes in log %s remaining=%u" % (skip_bytes, skip_type, self.remaining))
 
         self.offset += 3
@@ -371,7 +372,7 @@ class DFReader_binary(DFReader):
         if not msg_type in self.formats:
             if self.verbose:
                 print("unknown message type %02x" % msg_type)
-            raise Exception("Unknown message type %02x" % msg_type)
+            return self._parse_next()
         fmt = self.formats[msg_type]
         if self.remaining < fmt.len-3:
             # out of data - can often happen half way through a message
@@ -382,11 +383,7 @@ class DFReader_binary(DFReader):
         try:
             elements = list(struct.unpack(fmt.msg_struct, body))
         except Exception:
-            if self.remaining < 528:
-                # we can have garbage at the end of an APM2 log
-                return None
-            print("Failed to parse %s/%s with len %u (remaining %u)" % (fmt.name, fmt.msg_struct, len(body), self.remaining))
-            raise
+            return self._parse_next()
         name = null_term(fmt.name)
         if name == 'FMT' and elements[0] not in self.formats:
             # add to formats
