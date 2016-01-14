@@ -81,6 +81,7 @@ class DFMessage(object):
         self._elements = elements
         self._apply_multiplier = apply_multiplier
         self._fieldnames = fmt.columns
+        self.bin_dat = ""
 
     def to_dict(self):
         d = {'mavpackettype': self.fmt.name}
@@ -587,7 +588,7 @@ class DFReader_binary(DFReader):
         self._add_msg(m)
 
         self.percent = 100.0 * (self.offset / float(self.data_len))
-        
+        m.bin_dat = self.data[self.offset-fmt.len:self.offset]
         return m
 
 def DFReader_is_text_log(filename):
