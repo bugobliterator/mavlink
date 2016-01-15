@@ -1058,7 +1058,7 @@ def mavlink_connection(device, baud=115200, source_system=255,
                        planner_format=None, write=False, append=False,
                        robust_parsing=True, notimestamps=False, input=True,
                        dialect=None, autoreconnect=False, zero_time_base=False,
-                       retries=3, use_native=default_native):
+                       retries=3, use_native=default_native, bin_fobj=False):
     '''open a serial, UDP, TCP or file mavlink connection'''
     global mavfile_global
 
@@ -1073,6 +1073,13 @@ def mavlink_connection(device, baud=115200, source_system=255,
     # For legacy purposes we accept the following syntax and let the caller to specify direction
     if device.startswith('udp:'):
         return mavudp(device[4:], input=input, source_system=source_system, use_native=use_native)
+
+    if bin_fobj:
+        #support dataflash binary file obj
+        from pymavlink import DFReader
+        m = DFReader.DFReader_fileobj(device, zero_time_base=zero_time_base)
+        mavlink_global = m
+        return m
 
     if device.lower().endswith('.bin') or device.lower().endswith('.px4log'):
         # support dataflash logs

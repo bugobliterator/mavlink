@@ -676,6 +676,97 @@ class DFReader_text(DFReader):
 
         return m
 
+class DFReader_fileobj(DFReader):
+    '''parse a binary dataflash file'''
+    def __init__(self, fileobj, zero_time_base=False):
+        DFReader.__init__(self)
+        # read the whole file into memory for simplicity
+        f = fileobj
+        self.data = f.read()
+        self.data_len = len(self.data)
+        f.close()
+        self.HEAD1 = 0xA3
+        self.HEAD2 = 0x95
+        self.formats = {
+            0x80 : DFFormat(0x80, 'FMT', 89, 'BBnNZ', "Type,Length,Name,Format,Columns")
+        }
+        self._zero_time_base = zero_time_base
+        self.init_clock()
+        self._rewind()
+
+    def _rewind(self):
+        '''rewind to start of log'''
+        DFReader._rewind(self)
+        self.offset = 0
+        self.remaining = self.data_len
+
+    def _parse_next(self):
+        '''read one message, returning it as an object'''
+        if self.data_len - self.offset < 3:
+            return None
+            
+        hdr = self.data[self.offset:self.offset+3]
+        skip_bytes = 0
+        skip_type = None
+        # skip over bad messages
+        while (ord(hdr[0]) != self.HEAD1 or ord(hdr[1]) != self.HEAD2 or ord(hdr[2]) not in self.formats):
+            if skip_type is None:
+                skip_type = (ord(hdr[0]), ord(hdr[1]), ord(hdr[2]))
+            skip_bytes += 1
+            self.offset += 1
+            if self.data_len - self.offset < 3:
+                return None
+            hdr = self.data[self.offset:self.offset+3]
+        msg_type = ord(hdr[2])
+        if skip_bytes != 0:
+            if self.remaining < 528:
+                return None
+            print("Skipped %u bad bytes in log %s remaining=%u" % (skip_bytes, skip_type, self.remaining))
+            self.remaining -= skip_bytes
+
+        self.offset += 3
+        self.remaining -= 3
+
+        if not msg_type in self.formats:
+            if self.verbose:
+                print("unknown message type %02x" % msg_type)
+            raise Exception("Unknown message type %02x" % msg_type)
+        fmt = self.formats[msg_type]
+        if self.remaining < fmt.len-3:
+            # out of data - can often happen half way through a message
+            if self.verbose:
+                print("out of data")
+            return None
+        body = self.data[self.offset:self.offset+(fmt.len-3)]
+        elements = None
+        try:
+            elements = list(struct.unpack(fmt.msg_struct, body))
+        except Exception:
+            if self.remaining < 528:
+                # we can have garbage at the end of an APM2 log
+                return None
+            # we should also cope with other corruption; logs
+            # transfered via DataFlash_MAVLink may have blocks of 0s
+            # in them, for example
+            print("Failed to parse %s/%s with len %u (remaining %u)" % (fmt.name, fmt.msg_struct, len(body), self.remaining))
+        if elements is None:
+            return self._parse_next()
+        name = null_term(fmt.name)
+        if name == 'FMT':
+            # add to formats
+            # name, len, format, headings
+            self.formats[elements[0]] = DFFormat(elements[0],
+                                                 null_term(elements[2]), elements[1],
+                                                 null_term(elements[3]), null_term(elements[4]))
+
+        self.offset += fmt.len-3
+        self.remaining -= fmt.len-3
+        m = DFMessage(fmt, elements, True)
+        self._add_msg(m)
+
+        self.percent = 100.0 * (self.offset / float(self.data_len))
+        m.bin_dat = self.data[self.offset-fmt.len:self.offset]
+        return m
 
 if __name__ == "__main__":
     import sys
