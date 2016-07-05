@@ -3326,6 +3326,17 @@
             <field type="float" name="size_x">Size in radians of target along x-axis</field>
             <field type="float" name="size_y">Size in radians of target along y-axis</field>
         </message>
+        <message id="227" name="RAW_POS_ATT">
+            <description>Raw attitude and position measurement</description>
+            <field type="uint64_t" name="time_usec">Timestamp (micros since boot or Unix epoch)</field>
+            <field type="float" name="x">x local position in body/camera frame</field>
+            <field type="float" name="y">y local position in body/camera frame</field>
+            <field type="float" name="z">z local position in body/camera frame</field>
+            <field type="float" name="q0">q0 attitude, represented as Quaternion</field>
+            <field type="float" name="q1">q1 attitude, represented as Quaternion</field>
+            <field type="float" name="q2">q2 attitude, represented as Quaternion</field>
+            <field type="float" name="q3">q3 attitude, represented as Quaternion</field>
+        </message>
         <!-- MESSAGE IDs 180 - 229: Space for custom messages in individual projectname_messages.xml files -->
         <message id="230" name="ESTIMATOR_STATUS">
             <description>Estimator status message including flags, innovation test ratios and estimated accuracies. The flags message is an integer bitmask containing information on which EKF outputs are valid. See the ESTIMATOR_STATUS_FLAGS enum definition for further information. The innovaton test ratios show the magnitude of the sensor innovation divided by the innovation check threshold. Under normal operation the innovaton test ratios should be below 0.5 with occasional values up to 1.0. Values greater than 1.0 should be rare under normal operation and indicate that a measurement has been rejected by the filter. The user should be notified if an innovation test ratio greater than 1.0 is recorded. Notifications for values in the range between 0.5 and 1.0 should be optional and controllable by the user.</description>
