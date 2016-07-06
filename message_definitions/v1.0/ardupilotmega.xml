@@ -1518,8 +1518,8 @@
 	    <field name="pitch_ref" type="int32_t">pitch reference(radians*1000)</field>
 	    <field name="roll_out" type="int32_t">roll angle command out(radians*1000)</field>
             <field name="pitch_out" type="int32_t">pitch angle command out(radians*1000)</field>
-            <field name="roll_pwm" type="uint16_t">roll pwm output</field>
-            <field name="pitch_pwm" type="uint16_t">pitch pwm output</field>
+            <field name="roll_pwm" type="uint32_t">roll pwm output</field>
+            <field name="pitch_pwm" type="uint32_t">pitch pwm output</field>
         </message>
 
         <message id="214" name="GIMBAL_TORQUE_CMD_REPORT">
