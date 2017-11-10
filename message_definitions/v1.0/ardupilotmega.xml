@@ -210,6 +210,16 @@
         <param index="6">Magic number</param>
         <param index="7">Magic number</param>
       </entry>
+      <entry value="42506" name="MAV_CMD_SET_LED_PATTERN">
+        <description>Command to set LED Patterns</description>
+        <param index="1">LED Number</param>
+        <param index="2">Pattern ID</param>
+        <param index="3">Empty</param>
+        <param index="4">Empty</param>
+        <param index="5">Empty</param>
+        <param index="6">Empty</param>
+        <param index="7">Empty</param>
+      </entry>
     </enum>
     <!-- AP_Limits Enums -->
     <enum name="LIMITS_STATE">
