@@ -1657,5 +1657,27 @@
       <field type="uint16_t[4]" name="rpm" units="rpm">RPM (eRPM).</field>
       <field type="uint16_t[4]" name="count">count of telemetry packets received (wraps at 65535).</field>
     </message>
+    <message id="11033" name="OTP_WRITE">
+      <description>OTP Write</description>
+      <field type="uint8_t" name="region">Region Number</field>
+      <field type="uint16_t" name="size">OTP Data Size</field>
+      <field type="uint8_t[32]" name="data">Write data</field>
+    </message>
+    <message id="11034" name="OTP_READ">
+      <description>OTP Read</description>
+      <field type="uint32_t" name="region">Region Number</field>
+      <field type="uint16_t" name="size">OTP Data Size</field>
+    </message>
+    <message id="11035" name="OTP_READ_RESPONSE">
+      <description>OTP Read Response</description>
+      <field type="uint8_t" name="region">Region Number</field>
+      <field type="uint16_t" name="size">OTP Data Size</field>
+      <field type="uint8_t" name="lock">Lock value</field>  
+      <field type="uint8_t[32]" name="data">Write data</field>
+    </message>
+    <message id="11036" name="OTP_LOCK">
+      <description>OTP Read</description>
+      <field type="uint32_t" name="region">Region Number</field>
+    </message>
   </messages>
 </mavlink>
